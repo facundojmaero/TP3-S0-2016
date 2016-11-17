@@ -1,7 +1,13 @@
-/*
- *  chardev.c: Creates a read-only char device that says how many times
- *  you've read from the dev file
- */
+/**
+ * @file   charEncryptor.c
+ * @author Facundo Maero, Gustavo Gonzalez
+ * @date   Noviembre 2016
+ * @version 0.1
+ * @brief Modulo del Kernel que encripta el mensaje que recibe, y devuelve el mensaje
+ *        encriptado al ser leido.
+ *
+*/
+
 
 #include <linux/kernel.h>         // Contains types, macros, functions for the kernel
 #include <linux/module.h>         // Core header for loading LKMs into the kernel
@@ -9,12 +15,10 @@
 #include <asm/uaccess.h>		  /* for put_user */
 #include <linux/device.h>         // Header to support the kernel Driver Model
 
-#define  DEVICE_NAME "charEncryptor"    ///< The device will appear at /dev/ebbchar using this value
+#define  DEVICE_NAME "charEncryptor"    ///< The device will appear at /dev/charEncryptor using this value
 #define  CLASS_NAME  "charEncr"        ///< The device class -- this is a character device driver
 
-/*  
- *  Prototypes - this would normally go in a .h file
- */
+//Prototipos
 int init_module(void);
 void cleanup_module(void);
 static int device_open(struct inode *, struct file *);
@@ -24,7 +28,7 @@ static ssize_t device_write(struct file *, const char *, size_t, loff_t *);
 
 #define SUCCESS 0
 #define DEVICE_NAME "charEncryptor"	/* Dev name as it appears in /proc/devices   */
-#define BUF_LEN 80		/* Max length of the message from the device */
+#define BUF_LEN 80					/* Max length of the message from the device */
 
 
 MODULE_LICENSE("GPL");            ///< The license type -- this affects available functionality
@@ -34,7 +38,7 @@ MODULE_VERSION("0.1");            ///< A version number to inform users
 
 
 /* 
- * Global variables are declared as static, so are global within the file. 
+ * Variables globales de tipo estatico, solo son visibles en este archivo.
  */
 
 static int majorNumber;		/* majorNumber number assigned to our device driver */
@@ -54,9 +58,10 @@ static struct file_operations fops = {
 	.release = device_release
 };
 
-/*
- * This function is called when the module is loaded
- */
+  /**
+  * @brief Funcion llamada cuando se carga el modulo
+  *
+  */
 int init_module(void)
 {
 	printk(KERN_INFO "charEncryptor: inicializando modulo\n");
@@ -70,9 +75,9 @@ int init_module(void)
 	printk(KERN_INFO "charEncryptor se registro correctamente con el major number %d\n", majorNumber);
 
 
-	// Register the device class
+	// Registro la device class
 	charEncryptorClass = class_create(THIS_MODULE, CLASS_NAME);
-	if (IS_ERR(charEncryptorClass)){                // Check for error and clean up if there is
+	if (IS_ERR(charEncryptorClass)){                // Checkeo errores
 		unregister_chrdev(majorNumber, DEVICE_NAME);
 		printk(KERN_ALERT "Fallo al registrar la device class\n");
 		return PTR_ERR(charEncryptorClass);
@@ -82,37 +87,36 @@ int init_module(void)
 
 	// Registro el device driver
 	charEncryptorDevice = device_create(charEncryptorClass, NULL, MKDEV(majorNumber, 0), NULL, DEVICE_NAME);
-	if (IS_ERR(charEncryptorDevice)){               // Clean up if there is an error
+	if (IS_ERR(charEncryptorDevice)){               // Checkeo errores
 		class_destroy(charEncryptorClass);
 		unregister_chrdev(majorNumber, DEVICE_NAME);
 		printk(KERN_ALERT "Fallo al crear el device\n");
 		return PTR_ERR(charEncryptorDevice);
 	}
-	printk(KERN_INFO "charEncryptor: device class creada correctamente\n"); // Made it! device was initialized
+	printk(KERN_INFO "charEncryptor: device class creada correctamente\n");
 	return 0;
 }
 
-/*
- * This function is called when the module is unloaded
- */
+  /**
+  * @brief Funcion llamada cuando se descarga el modulo
+  *
+  */
 void cleanup_module(void)
 {
 
 	device_destroy(charEncryptorClass, MKDEV(majorNumber, 0));     // remove the device
 	class_unregister(charEncryptorClass);                          // unregister the device class
 	class_destroy(charEncryptorClass);                             // remove the device class
-	unregister_chrdev(majorNumber, DEVICE_NAME);             // unregister the major number
+	unregister_chrdev(majorNumber, DEVICE_NAME);             	   // unregister the major number
 	printk(KERN_INFO "charEncryptor: modulo removido.\n");
 }
 
-/*
- * Methods
- */
+//Metodos
 
-/* 
- * Called when a process tries to open the device file, like
- * "cat /dev/mycharfile"
- */
+  /**
+  * @brief Llamado cuando un proceso trata de abrir el device file
+  * Por ejemplo, usando "cat /dev/charEncryptor"
+  */
 static int device_open(struct inode *inode, struct file *file)
 {
 	if (Device_Open)
@@ -124,9 +128,10 @@ static int device_open(struct inode *inode, struct file *file)
 	return SUCCESS;
 }
 
-/* 
- * Called when a process closes the device file.
- */
+  /**
+  * @brief Llamado cuando un proceso libera el device file
+  * 
+  */
 static int device_release(struct inode *inode, struct file *file)
 {
 	Device_Open--;		/* We're now ready for our next caller */
@@ -140,61 +145,35 @@ static int device_release(struct inode *inode, struct file *file)
 	return 0;
 }
 
-/* 
- * Called when a process, which already opened the dev file, attempts to
- * read from it.
- */
-static ssize_t device_read(struct file *filp,	/* see include/linux/fs.h   */
-			   char *buffer,	/* buffer to fill with data */
-			   size_t length,	/* length of the buffer     */
-			   loff_t * offset){
-	/*
-	 * Number of bytes actually written to the buffer 
-	 */
-	int bytes_read = 0;
+  /**
+  * @brief Llamado cuando un proceso, que ya abrio el dev file, trata de leerlo.
+  */
+static ssize_t device_read(struct file *filp,
+						   char *buffer,	// buffer a llenar con datos
+						   size_t length,	// longitud del buffer
+						   loff_t * offset){
 
-	/*
-	 * If we're at the end of the message, 
-	 * return 0 signifying end of file 
-	 */
-	if (*msg_Ptr == 0)
-		return 0;
+	int error_count = 0;
+   	// copy_to_user has the format ( * to, *from, size) and returns 0 on success
+   	error_count = copy_to_user(buffer, msg, length);
 
-	/* 
-	 * Actually put the data into the buffer 
-	 */
-	while (length && *msg_Ptr) {
-
-		/* 
-		 * The buffer is in the user data segment, not the kernel 
-		 * segment so "*" assignment won't work.  We have to use 
-		 * put_user which copies data from the kernel data segment to
-		 * the user data segment. 
-		 */
-		put_user(*(msg_Ptr++), buffer++);
-
-		length--;
-		bytes_read++;
-	}
-
-	/* 
-	 * Most read functions return the number of bytes put into the buffer
-	 */
-	return bytes_read;
+   	return error_count;
 }
 
-/*  
- * Called when a process writes to dev file: echo "hi" > /dev/hello 
- */
+  /**
+  * @brief Llamado cuando un proceso escribe en el dev file
+  */
 static ssize_t device_write(struct file *filp, const char *buff, size_t len, loff_t * off)
 {
+	// msg[0] = '\0';
 	static int i;
-	sprintf(msg, "%s", buff);   // appending received string with its length
+	sprintf(msg, "%s", buff);   // Guardo el mensaje recibido (en buff), en el string msg
 
-	//encriptacion
+	//Encripto el mensaje sumando un entero fijo a cada caracter
     for(i = 0; i < len; i++){
-        msg[i] += 1;
+        msg[i] += 7;
     }
+    //Hago que el puntero apunte al mensaje para cuando lo lea
     msg_Ptr = msg;
 	printk(KERN_ALERT "Mensaje a encriptar recibido.\n");
 	return 0;

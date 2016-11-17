@@ -17,20 +17,20 @@
 #include <string.h>
 #include "colores.h"
  
-#define BUFFER_LENGTH 256               ///< Longitud del buffer
+#define BUFFER_LENGTH 80               ///< Longitud del buffer
 static char recieve[BUFFER_LENGTH];     ///< Buffer modificado por el modulo a llamar
  
 int main(){
-   int ret, fdEnc, fdDes, flag=1, result;
+   int fdEnc, fdDes;
    char stringToSend[BUFFER_LENGTH];
 
-   printf(BOLDBLUE"Encriptador de mensajes del Kernel de Linux\n"RESET);
+   printf(BOLDBLUE "Encriptador de mensajes del Kernel de Linux\n" RESET);
    printf("Ingrese la frase a encriptar.\n");
-   printf("Para salir, ingrese " BOLDRED "'EXIT'\n"RESET);
+   printf("Para salir, ingrese " BOLDRED "'exit'\n" RESET);
 
    fdEnc = open("/dev/charEncryptor", O_RDWR);             // Abro el archivo con permisos de lectoescritura
    if (fdEnc < 0){
-      perror(RED"Error al abrir el Encryptor..."RED);
+      perror(RED "Error al abrir el Encryptor..." RED);
       return errno;
    }
    fdDes = open("/dev/charDesencryptor", O_RDWR);             // Abro el archivo con permisos de lectoescritura
@@ -40,37 +40,38 @@ int main(){
    }
 
    while(1){
+      int ret, flag=1, result;
 
       result = scanf("%[^\n]%*c", stringToSend);                // Leo un string con espacios
       if(result<=0){
-         perror(RED"Error al leer el mensaje\n"RESET);
+         perror(RED "Error al leer el mensaje\n" RESET);
       }
 
-      flag = strcmp(stringToSend,"EXIT");
+      flag = strcmp(stringToSend,"exit");
       if(flag == 0){
          break;
       }
 
-      printf("Enviando mensaje al encriptador: "BOLDBLUE"%s\n"RESET, stringToSend);
+      printf("Enviando mensaje al encriptador: " BOLDBLUE "%s\n" RESET, stringToSend);
 
       ret = write(fdEnc, stringToSend, strlen(stringToSend)); // Envio el string al encriptador escribiendo en el archivo dev
       if (ret < 0){
-         perror(RED"Error al escribir el archivo del modulo."RESET);
+         perror(RED "Error al escribir el archivo del modulo." RESET);
          return errno;
       }
     
       ret = read(fdEnc, recieve, BUFFER_LENGTH);        // Leo la respuesta del modulo
       if (ret < 0){
-         perror(RED"Error al leer la respuesta del modulo."RESET);
+         perror(RED "Error al leer la respuesta del modulo." RESET);
          return errno;
       }
-      printf("El mensaje encriptado es: "BOLDMAGENTA"%s\n"RESET, recieve);
+      printf("El mensaje encriptado es: " BOLDMAGENTA "%s\n" RESET, recieve);
 
-      printf("\nDesencriptando el mensaje...\n");
+      printf("Desencriptando el mensaje...\n");
       strcpy(stringToSend, recieve);
       ret = write(fdDes, stringToSend, strlen(stringToSend)); // Envio el string al encriptador escribiendo en el archivo dev
       if (ret < 0){
-         perror(RED"Error al escribir el archivo del modulo."RESET);
+         perror(RED "Error al escribir el archivo del modulo." RESET);
          return errno;
       }
     
@@ -79,10 +80,11 @@ int main(){
     
       ret = read(fdDes, recieve, BUFFER_LENGTH);        // Leo la respuesta del modulo
       if (ret < 0){
-         perror(RED"Error al leer la respuesta del modulo."RESET);
+         perror(RED "Error al leer la respuesta del modulo." RESET);
          return errno;
       }
-      printf("El mensaje recuperado es: "BOLDBLUE"%s\n"RESET, recieve);
+      printf("El mensaje recuperado es: " BOLDBLUE "%s\n" RESET, recieve);
+      printf("\n=========================================================");
       printf("\nPor favor ingrese otro mensaje:\n");
    }
    

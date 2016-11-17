@@ -39,13 +39,17 @@ Para poder trabajar con estos dos módulos, se cuenta también con un programa s
 % sudo ./userInterface
 ```
 
-- Una vez en el programa, se le pedirá que ingrese un mensaje a encriptar. Luego de mostrarle la cadena codificada y decodificada, el programa esperará otro mensaje. Para salir, ingrese 'EXIT'.
+- Una vez en el programa, se le pedirá que ingrese un mensaje a encriptar. Luego de mostrarle la cadena codificada y decodificada, el programa esperará otro mensaje. Para salir, ingrese ```exit```.
 Una vez finalizada la prueba del programa, para quitar los módulos del Kernel, ejecute:
 ```
 % sudo rmmod charEncryptor
-$ sudo rmmod charDesencryptor
+% sudo rmmod charDesencryptor
 ```
 
+- Si desea ver los mensajes que imprimen los módulos del Kernel utilizados, ingrese el comando siguiente, siendo el número junto a ```-n``` la cantidad de líneas a leer del archivo.
+```
+% tail -n 20 /var/log/kern.log
+```
 - Al compilar y linkear, se genera un archivo donde se guardan los posibles errores y advertencias que encuentre el programa CppCheck al realizar el análisis estático del código. Este archivo se encuentra en:
 ```
 work/code/err.txt

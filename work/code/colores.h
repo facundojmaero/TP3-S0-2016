@@ -1,3 +1,12 @@
+/**
+ * @file   colores.h
+ * @author Facundo Maero, Gustavo Gonzalez
+ * @date   Noviembre 2016
+ * @version 0.1
+ * @brief Header con codigos de colores para usar en las impresiones en pantalla
+ *
+*/
+
 #define RESET   "\033[0m"
 #define BLACK   "\033[30m"      /* Black */
 #define RED     "\033[31m"      /* Red */

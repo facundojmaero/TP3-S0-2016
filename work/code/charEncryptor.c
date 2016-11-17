@@ -47,6 +47,7 @@ static int Device_Open = 0;	/* Is device open?
 static int timesOpened = 0;
 static char msg[BUF_LEN];	/* The msg the device will give when asked */
 static char *msg_Ptr;
+static char key[6] = {'F', 'C', 'E', 'F', 'Y', 'N'};
 
 static struct class*  charEncryptorClass  = NULL; ///< The device-driver class struct pointer
 static struct device* charEncryptorDevice = NULL; ///< The device-driver device struct pointer
@@ -169,10 +170,11 @@ static ssize_t device_write(struct file *filp, const char *buff, size_t len, lof
 	static int i;
 	sprintf(msg, "%s", buff);   // Guardo el mensaje recibido (en buff), en el string msg
 
-	//Encripto el mensaje sumando un entero fijo a cada caracter
-    for(i = 0; i < len; i++){
-        msg[i] += 7;
+	//Encripto el mensaje
+    for (i = 0; i < len; i++){
+        msg[i] = msg[i] ^ key[i % (sizeof(key))];
     }
+
     //Hago que el puntero apunte al mensaje para cuando lo lea
     msg_Ptr = msg;
 	printk(KERN_ALERT "Mensaje a encriptar recibido.\n");

@@ -38,7 +38,15 @@ Para poder trabajar con estos dos módulos, se cuenta también con un programa s
 ```
 % sudo ./userInterface
 ```
-Al compilar y linkear, se genera un archivo donde se guardan los posibles errores y advertencias que encuentre el programa CppCheck al realizar el análisis estático del código. Este archivo se encuentra en:
+
+- Una vez en el programa, se le pedirá que ingrese un mensaje a encriptar. Luego de mostrarle la cadena codificada y decodificada, el programa esperará otro mensaje. Para salir, ingrese 'EXIT'.
+Una vez finalizada la prueba del programa, para quitar los módulos del Kernel, ejecute:
+```
+% sudo rmmod charEncryptor
+$ sudo rmmod charDesencryptor
+```
+
+- Al compilar y linkear, se genera un archivo donde se guardan los posibles errores y advertencias que encuentre el programa CppCheck al realizar el análisis estático del código. Este archivo se encuentra en:
 ```
 work/code/err.txt
 ```

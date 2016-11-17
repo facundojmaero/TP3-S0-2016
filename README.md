@@ -40,6 +40,6 @@ Para poder trabajar con estos dos módulos, se cuenta también con un programa s
 ```
 Al compilar y linkear, se genera un archivo donde se guardan los posibles errores y advertencias que encuentre el programa CppCheck al realizar el análisis estático del código. Este archivo se encuentra en:
 ```
-shell/work/code/err.txt
+work/code/err.txt
 ```
 Si desea más información, remítase a la documentación proporcionada, que se encuentra en la ruta ```doc/html/index.html```
